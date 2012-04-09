@@ -37,10 +37,10 @@ object Application extends Controller {
       val uuid:UUID = java.util.UUID.randomUUID()
       val us = uuid.toString()
 
-      var jsVal = Json.parse(model.toString())
-      Todo.create(Todo(us,(model\"text").toString(),(model\"done").toString(),(model\"disp_order").as[Int]))
-
-      Ok(Json.parse("{\"id\":\""+us+"\"}").toString)
+      Todo.create(Todo(us, (model \ "text").as[String], (model \ "done").as[Boolean], (model \ "disp_order").as[Int]))
+      Ok(Json.stringify(
+        Json.toJson(Map("id" -> us))
+      ))
     }.getOrElse {
       BadRequest("Missing parameter [model]")
     }
@@ -51,19 +51,15 @@ object Application extends Controller {
   def putTodo(id:String) = Action(parse.json) {request =>
     (request.body).asOpt[JsValue].map{ model =>
       val t=Todo.findById(id)
-      val text=(model\"text")
+      val text=(model\"text").as[String]
       if(t.get.text!=text){
-        Todo.updateText(id,text.toString())
-        val map = Map("text" -> text)
-        println(map)
-        val json:JsValue = Json.toJson(map)
-        println(json)
-        Ok(json.toString)
+        Todo.updateText(id,text)
+      Ok(Json.stringify(Json.toJson( Map("text" -> text))))
       }
       else{
-        val done=(model\"done")
-        Todo.updateStatus(id,done.toString())
-        Ok(Json.parse("{\"done\":\""+done+"\"}").toString)
+        val done=(model\"done").as[Boolean]
+        Todo.updateStatus(id,done)
+        Ok(Json.stringify(Json.toJson(Map("done"->done))))
       }
     }.getOrElse {
       BadRequest("Missing parameter [model]")
@@ -79,8 +75,8 @@ object Application extends Controller {
 
   /* GET */
   def allTodos= Action {
-    val s=generate(Todo.getAll())
-    Ok(Json.toJson(s))
+    val s=Todo.getAll()
+    Ok(generate(s))
     }
 
 }

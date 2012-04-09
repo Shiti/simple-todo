@@ -15,7 +15,7 @@ import anorm._
 import anorm.SqlParser._
 
 
-case class Todo(id:String,text:String,done:String,disp_order:Int)
+case class Todo(id:String,text:String,done:Boolean,disp_order:Int)
 
 object Todo {
 
@@ -24,7 +24,7 @@ object Todo {
   def simple={
     get[String]("id")~
     get[String]("text")~
-    get[String]("done")~
+    get[Boolean]("done")~
     get[Int]("disp_order")map {
       case id~text~done~disp_order =>Todo(id,text,done,disp_order)
     }
@@ -87,7 +87,7 @@ object Todo {
   }
 
   /* Update a todo done attribute */
-  def updateStatus(id:String,done:String)={
+  def updateStatus(id:String,done:Boolean)={
     DB.withConnection{implicit connection=>
       SQL("UPDATE Todo SET done={done} WHERE id={id}").on(
         'id->id,'done->done
