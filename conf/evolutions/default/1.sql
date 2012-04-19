@@ -1,9 +1,13 @@
--- Todos SCHEMA
+# Todos SCHEMA
 
+# --- !Ups
 CREATE TABLE Todo (
-  id VARCHAR(255) PRIMARY KEY ,
+  id VARCHAR(255) PRIMARY KEY,
   text VARCHAR(100),
   done BOOLEAN,
-  disp_order INT UNIQUE      --had to change the attribute name as its a reserved keyword
+  disp_order INT UNIQUE
 );
 
+
+# --- !Downs
+DROP TABLE Todo;
