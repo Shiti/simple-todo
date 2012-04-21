@@ -21,6 +21,11 @@ Model.Todo = Backbone.Model.extend({
             disp_order: Model.Todos.nextOrder()    //changed name of attribute from order to disp_order
         };
     },
+    //bind this model to get event updates
+    modelName:'todo',
+    initialize:function(){
+        this.bindCQRS();
+    },
 
     // Toggle the `done` state of this todo item.
     toggle: function() {

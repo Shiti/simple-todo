@@ -8,7 +8,6 @@ import java.util.UUID
 
 import com.codahale.jerkson.Json._
 
-
 import models.Todo
 
 object Application extends Controller {

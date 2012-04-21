@@ -87,13 +87,24 @@ $(function(){
         createOnEnter: function(e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
-            Model.Todos.create({text: text});
+//            Model.Todos.create({text: text});
+            Model.Todos.add({text:text});
+
+//            //CQRS command
+//            var cmd=Backbone.CQRS.Command({
+//                name:'createTodo',
+//                payload:{
+//                    text:text
+//                }
+//            });
+//            //emit it
+//            cmd.emit();
             this.input.val('');
         },
 
         // Clear all done todo items, destroying their models.
         clearCompleted: function() {
-            _.each(Model.Todos.done(), function(todo){ todo.destroy(); });
+            _.each(Model.Todos.done(), function(todo){todo.destroy();});
             return false;
         },
 
@@ -116,4 +127,65 @@ $(function(){
 
     window.TodoApp = new View.AppView;
 
+    var delay=1000;//time taken by server to respond
+
+    // Init Backbone.CQRS
+    // ------------------
+    Backbone.CQRS.hub.init();
+
+    // override Backbone.sync with CQRS.sync which allows only GET method
+    Backbone.sync = Backbone.CQRS.sync;
+
+
+    // Wire up communication to/from server
+    // ------------------------------------
+    Backbone.CQRS.hub.on('commands', function(cmd) {
+        var evt = cmd;
+
+        // convert command to event
+        if (evt.name === 'createTodo') {
+            evt.name = 'todoCreated';
+            evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
+        } else if (evt.name === 'changeTodo') {
+            evt.name = 'todoChanged';
+        } else if (evt.name === 'deleteTodo') {
+            evt.name = 'todoDeleted';
+        }
+
+        // send with some delay - better to see effect
+        setTimeout(function() {
+            Backbone.CQRS.hub.emit('events', evt);
+        }, delay);
+    });
+
+
+
+    // Create a few EventDenormalizers
+    // -------------------------------
+
+    // todoCreated event (change methode to create and pass in model and collection to add it to
+    var todoCreateHandler = new Backbone.CQRS.EventDenormalizer({
+        methode: 'create',
+        model: Model.Todo,
+        collection: Model.TodoList,
+
+        // bindings
+        forModel: 'Model.Todo',
+        forEvent: 'todoCreated'
+    });
+
+    // todoChanged event (just go with defaults)
+    var todoChangedHandler = new Backbone.CQRS.EventDenormalizer({
+        forModel: 'todo',
+        forEvent: 'todoChanged'
+    });
+
+    // todoDeleted event (just change methode to delete)
+    var todoDeletedHandler = new Backbone.CQRS.EventDenormalizer({
+        methode: 'delete',
+
+        // bindings
+        forModel: 'Model.todo',
+        forEvent: 'todoDeleted'
+    });
 });
