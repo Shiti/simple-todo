@@ -100,33 +100,30 @@ object Todo {
 
   def handler(s:JsValue)={
     val name=(s\"name").as[String];
-    println(name)
     name match {
-      case "createTodo" =>{
+      case "todoCreated" =>{
         val uuid:UUID = java.util.UUID.randomUUID()
         val us = uuid.toString()
-        val text=(s\\"payload" \ "text").as[String]
-        val done=(s\\"payload"\"done").as[Boolean]
-        val disp_order=(s\\"payload"\"disp_order").as[Int]
-        println(text+';'+done)
+        val text=(s\"payload" \ "text").as[String]
+        val done=(s\"payload"\"done").as[Boolean]
+        val disp_order=(s\"payload"\"disp_order").as[Int]
         this.create(Todo(us,text,done,disp_order))
-        println("created")
 
       }
-      case "changeTodoText" =>{
-        val id=(s\\"payload"\"id").as[String]
-        val text=(s\\"payload"\"text").as[String]
+      case "todoTextChanged" =>{
+        val id=(s\"payload"\"id").as[String]
+        val text=(s\"payload"\"text").as[String]
         this.updateText(id,text)
 
       }
-      case "changeTodoStatus" =>{
-        val id=(s\\"payload"\"id").as[String]
-        val done=(s\\"payload"\"done").as[Boolean]
+      case "todoStatusChanged" =>{
+        val id=(s\"payload"\"id").as[String]
+        val done=(s\"payload"\"done").as[Boolean]
         this.updateStatus(id,done)
       }
 
-      case "deleteTodo" =>{
-        val id=(s\\"payload"\"id").as[String]
+      case "todoDeleted" =>{
+        val id=(s\"payload"\"id").as[String]
         this.delete(id)
       }
     }

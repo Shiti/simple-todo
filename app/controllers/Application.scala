@@ -79,7 +79,7 @@ object Application extends Controller {
 
   /* handle operations on todo*/
   def handleTodos=WebSocket.using[JsValue]{ request=>
-    val in=Iteratee.foreach[JsValue](s=>{println(s) ; Todo.handler(s)}).mapDone{_=>
+    val in=Iteratee.foreach[JsValue](s=> Todo.handler(s)).mapDone{_=>
       println("Disconnected")
 
       }
