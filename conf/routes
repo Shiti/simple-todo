@@ -8,15 +8,9 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 GET     /                           controllers.Application.index
 
-GET     /bb/todos/:id               controllers.Application.getTodo(id:String)
-
-POST    /bb/todos                   controllers.Application.postTodo
-
-PUT     /bb/todos/:id               controllers.Application.putTodo(id:String)
-
-DELETE  /bb/todos/:id               controllers.Application.deleteTodo(id:String)
-
 GET     /bb/todos                   controllers.Application.allTodos()
+
+GET     /handleTodos                    controllers.Application.handleTodos()
 
 
 

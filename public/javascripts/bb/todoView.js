@@ -77,7 +77,7 @@ View.TodoView = Backbone.View.extend({
 
         //CQRS command
         var cmd=new Backbone.CQRS.Command({
-            name:'changeTodo',
+            name:'changeTodoStatus',
             payload:{
                 id:this.model.id,
                 done:this.model.get('done')
@@ -103,7 +103,7 @@ View.TodoView = Backbone.View.extend({
 
             // CQRS command
             var cmd = new Backbone.CQRS.Command({
-                name: 'changeTodo',
+                name: 'changeTodoText',
                 payload: {
                     id: this.model.id,
                     text: newText

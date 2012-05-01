@@ -5,7 +5,18 @@
  * Time: 9:30 PM
  * To change this template use File | Settings | File Templates.
  */
+var todoSocket;
+
 $(function(){
+    var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
+    todoSocket = new WS("ws://"+location.host+"/handleTodos");
+
+//    todoSocket.onmessage=function(event){console.log(event)}
+
+
+    var receiveEvent = function(event) {
+        Backbone.CQRS.hub.emit('events',event)
+    };
 
 //window.App=new Object();
     // The Application
@@ -87,19 +98,21 @@ $(function(){
         createOnEnter: function(e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
-//            Model.Todos.create({text: text});
-            Model.Todos.add({text:text});
-
-//            //CQRS command
-//            var cmd=Backbone.CQRS.Command({
-//                name:'createTodo',
-//                payload:{
-//                    text:text
-//                }
-//            });
-//            //emit it
-//            cmd.emit();
+            var t= new Model.Todo({text: text});
+            Model.Todos.add(t);
             this.input.val('');
+
+            //CQRS command
+            var cmd=new Backbone.CQRS.Command({
+                name:'createTodo',
+                payload:{
+                    text:text,
+                    done:false,
+                    disp_order:Model.Todos.nextOrder()
+                }
+            });
+            //emit it
+            cmd.emit();
         },
 
         // Clear all done todo items, destroying their models.
@@ -127,8 +140,6 @@ $(function(){
 
     window.TodoApp = new View.AppView;
 
-    var delay=1000;//time taken by server to respond
-
     // Init Backbone.CQRS
     // ------------------
     Backbone.CQRS.hub.init();
@@ -139,23 +150,32 @@ $(function(){
 
     // Wire up communication to/from server
     // ------------------------------------
+
+    // pass in events from your websocket
+    todoSocket.onmessage=receiveEvent();
+
+     // forward commands to server via websocket
+
     Backbone.CQRS.hub.on('commands', function(cmd) {
         var evt = cmd;
 
         // convert command to event
         if (evt.name === 'createTodo') {
             evt.name = 'todoCreated';
-            evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
-        } else if (evt.name === 'changeTodo') {
-            evt.name = 'todoChanged';
+           // evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
+        } else if (evt.name === 'changeTodoText') {
+            evt.name = 'todoTextChanged';
+        } else if (evt.name === 'changeTodoStatus') {
+            evt.name = 'todoStatusChanged';
         } else if (evt.name === 'deleteTodo') {
             evt.name = 'todoDeleted';
         }
 
         // send with some delay - better to see effect
-        setTimeout(function() {
-            Backbone.CQRS.hub.emit('events', evt);
-        }, delay);
+//        setTimeout(function() {
+           // todoSocket.emit('events', evt);    // pass commands to socket
+        todoSocket.send(JSON.stringify(cmd));
+//        }, delay);
     });
 
 
@@ -176,7 +196,7 @@ $(function(){
 
     // todoChanged event (just go with defaults)
     var todoChangedHandler = new Backbone.CQRS.EventDenormalizer({
-        forModel: 'todo',
+        forModel: 'Model.Todo',
         forEvent: 'todoChanged'
     });
 
@@ -185,7 +205,7 @@ $(function(){
         methode: 'delete',
 
         // bindings
-        forModel: 'Model.todo',
+        forModel: 'Model.Todo',
         forEvent: 'todoDeleted'
     });
 });

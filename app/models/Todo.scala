@@ -8,11 +8,14 @@
 
 package models
 
+import java.util.UUID
+
 import play.api.db._
 import play.api.Play.current
 
 import anorm._
 import anorm.SqlParser._
+import play.api.libs.json.JsValue
 
 
 case class Todo(id:String,text:String,done:Boolean,disp_order:Int)
@@ -94,4 +97,40 @@ object Todo {
       ).executeUpdate()
     }
   }
+
+  def handler(s:JsValue)={
+    val name=(s\"name").as[String];
+    println(name)
+    name match {
+      case "createTodo" =>{
+        val uuid:UUID = java.util.UUID.randomUUID()
+        val us = uuid.toString()
+        val text=(s\\"payload" \ "text").as[String]
+        val done=(s\\"payload"\"done").as[Boolean]
+        val disp_order=(s\\"payload"\"disp_order").as[Int]
+        println(text+';'+done)
+        this.create(Todo(us,text,done,disp_order))
+        println("created")
+
+      }
+      case "changeTodoText" =>{
+        val id=(s\\"payload"\"id").as[String]
+        val text=(s\\"payload"\"text").as[String]
+        this.updateText(id,text)
+
+      }
+      case "changeTodoStatus" =>{
+        val id=(s\\"payload"\"id").as[String]
+        val done=(s\\"payload"\"done").as[Boolean]
+        this.updateStatus(id,done)
+      }
+
+      case "deleteTodo" =>{
+        val id=(s\\"payload"\"id").as[String]
+        this.delete(id)
+      }
+    }
+  }
+
+
 }
