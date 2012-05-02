@@ -9,7 +9,8 @@ var todoSocket;
 
 $(function(){
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-    todoSocket = new WS("ws://"+location.host+"/handleTodos");
+//    todoSocket = new WS("ws://"+location.host+"/handleTodos");
+    todoSocket = new WS("@routes.SocketIO.socketSetup(java.util.UUID.randomUUID().toString()).webSocketURL()")
 
 //    todoSocket.onmessage=function(event){console.log(event)}
 
@@ -162,7 +163,7 @@ $(function(){
         // convert command to event
         if (evt.name === 'createTodo') {
             evt.name = 'todoCreated';
-           // evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
+            evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
         } else if (evt.name === 'changeTodoText') {
             evt.name = 'todoTextChanged';
         } else if (evt.name === 'changeTodoStatus') {

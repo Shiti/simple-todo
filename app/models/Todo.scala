@@ -8,7 +8,6 @@
 
 package models
 
-import java.util.UUID
 
 import play.api.db._
 import play.api.Play.current
@@ -98,36 +97,36 @@ object Todo {
     }
   }
 
-  def handler(s:JsValue)={
-    val name=(s\"name").as[String];
-    name match {
-      case "todoCreated" =>{
-        val uuid:UUID = java.util.UUID.randomUUID()
-        val us = uuid.toString()
-        val text=(s\"payload" \ "text").as[String]
-        val done=(s\"payload"\"done").as[Boolean]
-        val disp_order=(s\"payload"\"disp_order").as[Int]
-        this.create(Todo(us,text,done,disp_order))
-
-      }
-      case "todoTextChanged" =>{
-        val id=(s\"payload"\"id").as[String]
-        val text=(s\"payload"\"text").as[String]
-        this.updateText(id,text)
-
-      }
-      case "todoStatusChanged" =>{
-        val id=(s\"payload"\"id").as[String]
-        val done=(s\"payload"\"done").as[Boolean]
-        this.updateStatus(id,done)
-      }
-
-      case "todoDeleted" =>{
-        val id=(s\"payload"\"id").as[String]
-        this.delete(id)
-      }
-    }
-  }
+//  def handler(s:JsValue)={
+//    val name=(s\"name").as[String];
+//    name match {
+//      case "todoCreated" =>{
+//        val uuid:UUID = java.util.UUID.randomUUID()
+//        val us = uuid.toString()
+//        val text=(s\"payload" \ "text").as[String]
+//        val done=(s\"payload"\"done").as[Boolean]
+//        val disp_order=(s\"payload"\"disp_order").as[Int]
+//        this.create(Todo(us,text,done,disp_order))
+//
+//      }
+//      case "todoTextChanged" =>{
+//        val id=(s\"payload"\"id").as[String]
+//        val text=(s\"payload"\"text").as[String]
+//        this.updateText(id,text)
+//
+//      }
+//      case "todoStatusChanged" =>{
+//        val id=(s\"payload"\"id").as[String]
+//        val done=(s\"payload"\"done").as[Boolean]
+//        this.updateStatus(id,done)
+//      }
+//
+//      case "todoDeleted" =>{
+//        val id=(s\"payload"\"id").as[String]
+//        this.delete(id)
+//      }
+//    }
+//  }
 
 
 }

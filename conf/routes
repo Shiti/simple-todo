@@ -10,7 +10,10 @@ GET     /                           controllers.Application.index
 
 GET     /bb/todos                   controllers.Application.allTodos()
 
-GET     /handleTodos                    controllers.Application.handleTodos()
+#GET     /handleTodos                controllers.Application.handleTodos()
+
+GET     /socket.io/1/websocket/:sessionId      controllers.SocketIO.socketSetup(sessionId)
+
 
 
 
