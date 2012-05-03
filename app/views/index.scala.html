@@ -1,5 +1,10 @@
-@main("Things To do") {
+@(title: String)(implicit request: RequestHeader)
 
+@main(title) {
+
+    <script type="text/javascript">
+        window.wsBaseUrl =  "@routes.SocketIO.socketSetup(java.util.UUID.randomUUID().toString()).webSocketURL()";
+    </script>
     <script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/bb/todoAppView.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/bb/todoView.js")" type="text/javascript"></script>
