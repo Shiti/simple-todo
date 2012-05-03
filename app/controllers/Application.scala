@@ -11,8 +11,8 @@ import models.Todo
 
 object Application extends Controller {
 
-  def index = Action {
-    Ok(views.html.index())
+  def index = Action { implicit request =>
+    Ok(views.html.index("Things To do"))
   }
 
   /* GET */
