@@ -10,42 +10,40 @@ var todoSocket;
 
 $(function () {
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-//    todoSocket = new WS("ws://"+location.host+"/handleTodos");
     todoSocket = new WS(window.wsBaseUrl);
 
     todoSocket.onmessage = function (msg) {
         console.log(msg);
-        receiveTodoEvent(msg.data);
+
+        receiveTodoEvent(JSON.parse(msg.data));
     }
 
     function receiveTodoEvent(msg) {
-        Backbone.CQRS.hub.emit('events', msg)
-    }
 
-//window.App=new Object();
-    // The Application
-    // ---------------
+        Backbone.CQRS.hub.emit('events', msg);
+        console.log(Model.Todos);
+        }
 
-    // Our overall **AppView** is the top-level piece of UI.
+
+    /* The Application */
+
+    /* Our overall **AppView** is the top-level piece of UI.*/
     View.AppView = Backbone.View.extend({
 
-        // Instead of generating a new element, bind to the existing skeleton of
-        // the App already present in the HTML.
+        /* Instead of generating a new element, bind to the existing skeleton of
+         the App already present in the HTML. */
         el:$("#todoapp"),
 
-        // Our template for the line of statistics at the bottom of the app.
-//        statsTemplate: _.template($('#stats-template').html()),
-
-        // Delegated events for creating new items, and clearing completed ones.
+        /* Delegated events for creating new items, and clearing completed ones.  */
         events:{
             "keypress #new-todo":"createOnEnter",
             "keyup #new-todo":"showTooltip",
             "click .todo-clear a":"clearCompleted"
         },
 
-        // At initialization we bind to the relevant events on the `Todos`
-        // collection, when items are added or changed. Kick things off by
-        // loading any preexisting todos that might be saved in *localStorage*.
+        /* At initialization we bind to the relevant events on the `Todos`
+         collection, when items are added or changed. Kick things off by
+         loading any preexisting todos that might be saved in backend */
         initialize:function () {
             this.input = this.$("#new-todo");
 
@@ -56,16 +54,10 @@ $(function () {
             Model.Todos.fetch();
         },
 
-        // Re-rendering the App just means refreshing the statistics -- the rest
-        // of the app doesn't change.
-//        render: function() {
-//            this.$('#todo-stats').html(this.statsTemplate({
-//                total:      Model.Todos.length,
-//                done:       Model.Todos.done().length,
-//                remaining:  Model.Todos.remaining().length
-//            }));
-//        },
-        //render function using mustache.js
+        /* Re-rendering the App just means refreshing the statistics -- the rest
+        of the app doesn't change.
+
+        render function using mustache.js  */
         render:function () {
             var stats = {
                 total:Model.Todos.length,
@@ -85,28 +77,26 @@ $(function () {
 
         },
 
-        // Add a single todo item to the list by creating a view for it, and
-        // appending its element to the `<ul>`.
+        /* Add a single todo item to the list by creating a view for it, and
+        appending its element to the `<ul>`.*/
         addOne:function (todo) {
             var view = new View.TodoView({model:todo});
             $("#todo-list").append(view.render().el);
         },
 
-        // Add all items in the **Todos** collection at once.
+        /* Add all items in the **Todos** collection at once.*/
         addAll:function () {
             Model.Todos.each(this.addOne);
         },
 
-        // If you hit return in the main input field, and there is text to save,
-        // create new **Todo** model persisting it to *localStorage*.
+        /* If you hit return in the main input field, and there is text to save,
+         create new **Todo** model persisting it to backend. */
         createOnEnter:function (e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
             var t = new Model.Todo({text:text});
-            Model.Todos.add(t);
-            this.input.val('');
 
-            //CQRS command
+            /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
                 name:'createTodo',
                 payload:{
@@ -115,20 +105,42 @@ $(function () {
                     disp_order:Model.Todos.nextOrder()
                 }
             });
-            //emit it
+            /* emit it */
             cmd.emit();
+
+            this.input.val('');
         },
 
-        // Clear all done todo items, destroying their models.
+        /* Clear all done todo items, destroying their models. */
         clearCompleted:function () {
+//            _.each(Model.Todos.done(), function (todo) {
+//                todo.destroy();
+//            });
+            var finished=null;
             _.each(Model.Todos.done(), function (todo) {
-                todo.destroy();
+                console.log((todo.id).toString())
+                if (!finished){
+                    finished=todo.id
+                }
+                else finished=finished+","+todo.id
             });
+            console.log("over here "+finished);
+
+            /* CQRS command */
+            var cmd = new Backbone.CQRS.Command({
+                name:'deleteDoneTodo',
+                payload:{
+                    ids:finished.toString()
+                }
+            });
+            /* emit it */
+            cmd.emit();
+            console.log("and here!!!")
             return false;
         },
 
-        // Lazily show the tooltip that tells you to press `enter` to save
-        // a new todo item, after one second.
+        /* Lazily show the tooltip that tells you to press `enter` to save
+        a new todo item, after one second. */
         showTooltip:function (e) {
             var tooltip = this.$(".ui-tooltip-top");
             var val = this.input.val();
@@ -143,26 +155,21 @@ $(function () {
 
     });
 
-    // Create our global collection of **Todos**.
+    /* Create our global collection of **Todos**. */
     Model.Todos = new Model.TodoList;
 
     window.TodoApp = new View.AppView;
 
-    // Init Backbone.CQRS
-    // ------------------
+    /* Init Backbone.CQRS */
     Backbone.CQRS.hub.init();
 
-    // override Backbone.sync with CQRS.sync which allows only GET method
+    /* override Backbone.sync with CQRS.sync which allows only GET method */
     Backbone.sync = Backbone.CQRS.sync;
 
 
-    // Wire up communication to/from server
-    // ------------------------------------
+    /* Wire up communication to/from server */
 
-    // pass in events from your websocket
-    //todoSocket.onmessage=receiveEvent();
-
-    // forward commands to server via websocket
+    /* forward commands to server via websocket */
 
     Backbone.CQRS.hub.on('commands', function (cmd) {
         var evt = cmd;
@@ -177,42 +184,58 @@ $(function () {
             evt.name = 'todoStatusChanged';
         } else if (evt.name === 'deleteTodo') {
             evt.name = 'todoDeleted';
+        } else if (evt.name=='deleteDoneTodo'){
+            evt.name='doneTodoDeleted';
         }
 
-        // send with some delay - better to see effect
-//        setTimeout(function() {
-        // todoSocket.emit('events', evt);    // pass commands to socket
+        /* pass commands to websocket */
         todoSocket.send(JSON.stringify(cmd));
-//        }, delay);
     });
 
 
-    // Create a few EventDenormalizers
-    // -------------------------------
+    /* Create a few EventDenormalizers */
 
-    // todoCreated event (change methode to create and pass in model and collection to add it to
+    /* todoCreated event (change methode to create and pass in model and collection to add it to */
     var todoCreateHandler = new Backbone.CQRS.EventDenormalizer({
         methode:'create',
         model:Model.Todo,
-        collection:Model.TodoList,
+        collection:Model.Todos,
 
-        // bindings
-        forModel:'Model.Todo',
+        /* bindings */
+        forModel:'todo',
         forEvent:'todoCreated'
     });
 
-    // todoChanged event (just go with defaults)
-    var todoChangedHandler = new Backbone.CQRS.EventDenormalizer({
-        forModel:'Model.Todo',
-        forEvent:'todoChanged'
+    /* todoTextChanged event (just go with defaults) */
+    var todoTextChangedHandler = new Backbone.CQRS.EventDenormalizer({
+
+        forModel:'todo',
+        forEvent:'todoTextChanged'
     });
 
-    // todoDeleted event (just change methode to delete)
+    /* todoStatusChanged event (just go with defaults) */
+    var todoStatusChangedHandler = new Backbone.CQRS.EventDenormalizer({
+
+        forModel:'todo',
+        forEvent:'todoStatusChanged'
+    });
+
+    /* todoDeleted event (just change methode to delete) */
     var todoDeletedHandler = new Backbone.CQRS.EventDenormalizer({
         methode:'delete',
 
-        // bindings
-        forModel:'Model.Todo',
+
+        /* bindings */
+        forModel:'todo',
         forEvent:'todoDeleted'
+    });
+
+    /* doneTodoDeleted event */
+    var doneTodoDeletedHandler=new Backbone.CQRS.EventDenormalizer({
+        methode:'delete',
+
+        /* bindings */
+        forModel:'Model.Todos',
+        forEvent:'doneTodoDeleted'
     });
 });

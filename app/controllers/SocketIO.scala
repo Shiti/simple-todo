@@ -18,6 +18,7 @@ import java.util.UUID
 import models.Todo
 
 
+
 object SocketIO extends Controller {
 
   implicit val timeout = Timeout(10 second)
@@ -26,12 +27,6 @@ object SocketIO extends Controller {
     Akka.system.actorOf(Props[SocketIOActor])
   }
 
-  /* def init = Action {
-    val sessionId = java.util.UUID.randomUUID().toString()
-    println(sessionId)
-    Ok(sessionId + ":1:10:websocket")
-  } */
-
   def socketSetup(sessionId: String) = WebSocket.async[JsValue] {
     request =>
       (socketIOActor ? Join(sessionId)).asPromise.map {
@@ -39,7 +34,7 @@ object SocketIO extends Controller {
         case Connected(enumerator) =>
 
           println("Connected")
-          // Create an Iteratee to consume the feed
+          /* Create an Iteratee to consume the feed */
           val iteratee = Iteratee.foreach[JsValue] {
             event =>
               println("Talking -- " + event)
@@ -54,12 +49,12 @@ object SocketIO extends Controller {
 
         case CannotConnect(error) =>
 
-          // Connection error
+          /* Connection error*/
 
-          // A finished Iteratee sending EOF
+          /* A finished Iteratee sending EOF */
           val iteratee = Done[JsValue, Unit]((), Input.EOF)
 
-          // Send an error and close the socket
+          /* Send an error and close the socket */
           val enumerator = Enumerator[JsValue](error).andThen(Enumerator.enumInput(Input.EOF))
 
           (iteratee, enumerator)
@@ -86,11 +81,11 @@ class SocketIOActor extends Actor {
       }
     }
     case Message(sessionId, event) => {
-      println(sessionId + "---" + event)
-      //DO your message processing here! Like saving the data
-      //      val id = math.round(math.random * 1000)
+      println(sessionId + "---" + event.toString())
+      /* your message processing here! Like saving the data */
       val name = (event \ "name").as[String];
       var id = (event \ "payload" \ "id").as[String]
+
 
       name match {
         case "todoCreated" => {
@@ -100,27 +95,63 @@ class SocketIOActor extends Actor {
           val done = (event \ "payload" \ "done").as[Boolean]
           val disp_order = (event \ "payload" \ "disp_order").as[Int]
           Todo.create(Todo(id, text, done, disp_order))
+          println("Sending todo with id - " + id)
+          notify(sessionId,Json.toJson(Map(
+            "name"->Json.toJson(name),
+            "payload"->Json.toJson(Map(
+              "id" -> Json.toJson(id),
+              "text"->Json.toJson(text),
+              "done"->Json.toJson(done),
+              "disp_order"->Json.toJson(disp_order)
+            ))
+          )))
         }
         case "todoTextChanged" => {
-          //          val id=(event\"payload"\"id").as[String]
           val text = (event \ "payload" \ "text").as[String]
           Todo.updateText(id, text)
+          println("Sending todo text with id - " + id)
+          notify(sessionId, Json.toJson(Map(
+            "name"->Json.toJson(name),
+            "payload"->Json.toJson(Map(
+              "id" -> Json.toJson(id),
+              "text"->Json.toJson(text)
+            ))
+          )))
 
         }
         case "todoStatusChanged" => {
-          //          val id=(event\"payload"\"id").as[String]
           val done = (event \ "payload" \ "done").as[Boolean]
           Todo.updateStatus(id, done)
+          println("Sending todo done with id - " + id)
+          notify(sessionId, Json.toJson(Map(
+            "name"->Json.toJson(name),
+            "payload"->Json.toJson(Map(
+              "id" -> Json.toJson(id),
+              "done"->Json.toJson(done)
+            ))
+          )))
         }
 
         case "todoDeleted" => {
           Todo.delete(id)
+          println("Sending id - " + id)
+          notify(sessionId, Json.toJson(Map(
+            "name"->Json.toJson(name),
+            "payload"->Json.toJson(Map(
+              "id" -> Json.toJson(id)
+            ))
+          )))
+        }
+
+        case "doneTodoDeleted" =>{
+          println("in delete all")
+          val ids=(event\"payload"\"ids").as[String]
+          println(ids)
+          Todo.deleteDone(ids)
+          println("sending from delete")
+          notify(sessionId,Json.toJson(Map("name"->Json.toJson(name) ,"ids"->Json.toJson(ids))))
         }
       }
-
-      println("Sending ID - " + id)
-      notify(sessionId, Json.toJson(Map("id" -> id)))
-
     }
 
     case Quit(sessionId) => {
@@ -136,8 +167,6 @@ class SocketIOActor extends Actor {
 }
 
 case class Join(sessionId: String)
-
-case class Heartbeat(sessionId: String)
 
 case class Message(sessionId: String, message: JsValue)
 

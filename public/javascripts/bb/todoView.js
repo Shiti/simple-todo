@@ -5,24 +5,19 @@
  * Time: 9:26 PM
  * To change this template use File | Settings | File Templates.
  */
-//$(function(){
 
 
 window.View=new Object();
 
-// Todo Item View
-// --------------
+/* Todo Item View */
 
-// The DOM element for a todo item...
+/* The DOM element for a todo item... */
 View.TodoView = Backbone.View.extend({
 
-    //... is a list tag.
+    /*... is a list tag. */
     tagName:  "li",
 
-    // Cache the template function for a single item.
-//        template: _.template($('#item-template').html()),
-
-    // The DOM events specific to an item.
+    /* The DOM events specific to an item. */
     events: {
         "click .check"              : "toggleDone",
         "dblclick div.todo-text"    : "edit",
@@ -30,19 +25,12 @@ View.TodoView = Backbone.View.extend({
         "keypress .todo-input"      : "updateOnEnter"
     },
 
-    // The TodoView listens for changes to its model, re-rendering.
+    /* The TodoView listens for changes to its model, re-rendering. */
     initialize: function() {
         this.model.bind('change', this.render, this);
-//            this.model.bind('destroy', this.remove, this);
     },
 
-    // Re-render the contents of the todo item.
-//        render: function() {
-//            $(this.el).html(this.template(this.model.toJSON()));
-//            this.setText();
-//            return this;
-//        },
-
+    /* Re-render the contents of the todo item. */
     render: function() {
 
         var textTemplate=$("#item-template").html();
@@ -61,8 +49,8 @@ View.TodoView = Backbone.View.extend({
         return this;
     },
 
-    // To avoid XSS (not that it would be harmful in this particular app),
-    // we use `jQuery.text` to set the contents of the todo item.
+    /* To avoid XSS (not that it would be harmful in this particular app),
+     we use `jQuery.text` to set the contents of the todo item.*/
     setText: function() {
         var text = this.model.get('text');
         this.$('.todo-text').text(text);
@@ -70,17 +58,15 @@ View.TodoView = Backbone.View.extend({
         this.input.bind('blur', _.bind(this.close, this)).val(text);
     },
 
-    // Toggle the `"done"` state of the model.
+    /* Toggle the `"done"` state of the model. */
     toggleDone: function() {
-//            this.model.toggle();
-        this.model.set('done',!this.model.get('done'));
 
         //CQRS command
         var cmd=new Backbone.CQRS.Command({
             name:'changeTodoStatus',
             payload:{
                 id:this.model.id,
-                done:this.model.get('done')
+                done:!this.model.get('done')
             }
         });
 
@@ -88,20 +74,18 @@ View.TodoView = Backbone.View.extend({
         cmd.emit();
     },
 
-    // Switch this view into `"editing"` mode, displaying the input field.
+    /* Switch this view into `"editing"` mode, displaying the input field. */
     edit: function() {
         $(this.el).addClass("editing");
         this.input.focus();
     },
 
-    // Close the `"editing"` mode, saving changes to the todo.
+    /* Close the `"editing"` mode, saving changes to the todo. */
     close: function() {
-//            this.model.save({text: this.input.val()});
         var newText=this.input.val();
-        this.model.set('text',newText)
         if (newText) {
 
-            // CQRS command
+            /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
                 name: 'changeTodoText',
                 payload: {
@@ -110,31 +94,30 @@ View.TodoView = Backbone.View.extend({
                 }
             });
 
-            // emit it
+            /* emit it */
             cmd.emit();
         }
         $(this.el).removeClass("editing");
     },
 
-    // If you hit `enter`, we're through editing the item.
+    /* If you hit `enter`, we're through editing the item.*/
     updateOnEnter: function(e) {
         if (e.keyCode == 13) this.close();
     },
 
-    // Remove this view from the DOM.
+    /* Remove this view from the DOM. */
     remove: function() {
         $(this.el).remove();
     },
 
-    // Remove the item, destroy the model.
+    /* Remove the item, destroy the model.*/
     clear: function(e) {
         //this.model.destroy();
         e.preventDefault();
 
         this.remove();
-        Model.Todos.remove(this.model);
 
-        // CQRS command
+        /* CQRS command */
         var cmd = new Backbone.CQRS.Command({
             name: 'deleteTodo',
             payload: {
@@ -142,10 +125,9 @@ View.TodoView = Backbone.View.extend({
             }
         });
 
-        // emit it
+        /* emit it */
         cmd.emit();
     }
 
 });
 
-//});

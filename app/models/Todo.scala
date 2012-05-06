@@ -22,7 +22,6 @@ case class Todo(id:String,text:String,done:Boolean,disp_order:Int)
 object Todo {
 
   /* Parse a todo from the result set */
-
   def simple={
     get[String]("id")~
     get[String]("text")~
@@ -31,25 +30,15 @@ object Todo {
       case id~text~done~disp_order =>Todo(id,text,done,disp_order)
     }
   }
-//  def simple={
-//    get[String]("id")~
-//      get[String]("text")~
-//      get[String]("done") map {
-//      case id~text~done =>Todo(id,text,done)
-//    }
-//  }
 
   /* Retrieve all todos */
   def getAll():Seq[Todo]={
     DB.withConnection{implicit connection=>
       SQL("SELECT * FROM Todo").as(Todo.simple *)
-
     }
-
   }
 
-  /* Retrieve a todo by its id */
-  /* this is not needed for our app */
+  /* Retrieve a todo by its id --this is not needed for our app */
   def findById(id: String): Option[Todo] = {
     DB.withConnection { implicit connection =>
       SQL("select * from Todo where id = {id}").on(
@@ -75,7 +64,6 @@ object Todo {
     DB.withConnection{implicit connection=>
       SQL("DELETE FROM Todo WHERE id={id}").on(
         'id->id).executeUpdate()
-
     }
   }
 
@@ -97,36 +85,14 @@ object Todo {
     }
   }
 
-//  def handler(s:JsValue)={
-//    val name=(s\"name").as[String];
-//    name match {
-//      case "todoCreated" =>{
-//        val uuid:UUID = java.util.UUID.randomUUID()
-//        val us = uuid.toString()
-//        val text=(s\"payload" \ "text").as[String]
-//        val done=(s\"payload"\"done").as[Boolean]
-//        val disp_order=(s\"payload"\"disp_order").as[Int]
-//        this.create(Todo(us,text,done,disp_order))
-//
-//      }
-//      case "todoTextChanged" =>{
-//        val id=(s\"payload"\"id").as[String]
-//        val text=(s\"payload"\"text").as[String]
-//        this.updateText(id,text)
-//
-//      }
-//      case "todoStatusChanged" =>{
-//        val id=(s\"payload"\"id").as[String]
-//        val done=(s\"payload"\"done").as[Boolean]
-//        this.updateStatus(id,done)
-//      }
-//
-//      case "todoDeleted" =>{
-//        val id=(s\"payload"\"id").as[String]
-//        this.delete(id)
-//      }
-//    }
-//  }
-
+  /* Delete all completed todo */
+  def deleteDone(ids:String)={
+    println(ids)
+    DB.withConnection{implicit connection=>
+      SQL("DELETE FROM Todo WHERE id in ({ids})").on(
+      'ids-> ids
+      ).executeUpdate()
+    }
+  }
 
 }

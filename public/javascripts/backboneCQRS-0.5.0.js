@@ -151,8 +151,12 @@
         // will be called by Backbone.CQRS.eventHandler 
         // models can listen to this event via myModel.bindCQRS()
         handle: function(evt) {
+            //shiti
+            console.log("in cqrs");
+            console.log(evt.name+","+this.methode);
             if (this.methode !== 'create') {
                 if (evt.id) {
+
                     this.trigger('change:' + evt.id, this.parse(evt), this.apply(this.methode));
                 }
             } else {
@@ -167,6 +171,8 @@
         // apply function for the model
         apply: function(methode) {
             return function(data, model) {
+                //shiti
+                console.log("reached apply");
                 if (methode === 'delete') {
                     // unbind it
                     if (model.isCQRSBound) model.unbindCQRS();
@@ -249,6 +255,7 @@
 
             _(denorm).each(function(d) {
                 d.handle(evt);
+
             });
         },
 
