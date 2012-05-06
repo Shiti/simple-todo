@@ -19,9 +19,42 @@ $(function () {
     }
 
     function receiveTodoEvent(msg) {
-
+        /* using backbone.cqrs event denormalizers */
         Backbone.CQRS.hub.emit('events', msg);
-        console.log(Model.Todos);
+        /* without using backbone.cqrs event denormalizers -- also requires changes in SocketIO.scala --notify part
+        var name=msg.name;
+
+        switch(name){
+            case "todoCreated":
+                console.log("here");
+                Model.Todos.add({text:msg.text,done:msg.done,disp_order:msg.disp_order,id:msg.id});
+                break;
+
+            case "todoDeleted":
+                Model.Todos.remove(Model.Todos.get(msg.id));
+                console.log(Model.Todos);
+                break;
+
+            case "todoTextChanged":
+                (Model.Todos.get(msg.id)).set('text',msg.text);
+                break;
+
+            case "todoStatusChanged":
+                (Model.Todos.get(msg.id)).set('done',msg.done);
+                break;
+
+            case "doneTodoDeleted":
+                console.log("in clear all");
+                _.each(Model.Todos.done(), function (todo) {
+                    todo.destroy();
+                    todo.remove();
+                });
+                break;
+
+            default:
+                console.log(msg);
+                break;
+        }           */
         }
 
 
@@ -113,30 +146,16 @@ $(function () {
 
         /* Clear all done todo items, destroying their models. */
         clearCompleted:function () {
-//            _.each(Model.Todos.done(), function (todo) {
-//                todo.destroy();
-//            });
-            var finished=null;
-            _.each(Model.Todos.done(), function (todo) {
-                console.log((todo.id).toString())
-                if (!finished){
-                    finished=todo.id
-                }
-                else finished=finished+","+todo.id
-            });
-            console.log("over here "+finished);
-
+//
             /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
                 name:'deleteDoneTodo',
-                payload:{
-                    ids:finished.toString()
-                }
+                payload:{}
+
             });
             /* emit it */
             cmd.emit();
-            console.log("and here!!!")
-            return false;
+
         },
 
         /* Lazily show the tooltip that tells you to press `enter` to save
@@ -208,7 +227,6 @@ $(function () {
 
     /* todoTextChanged event (just go with defaults) */
     var todoTextChangedHandler = new Backbone.CQRS.EventDenormalizer({
-
         forModel:'todo',
         forEvent:'todoTextChanged'
     });

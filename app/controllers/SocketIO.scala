@@ -83,13 +83,13 @@ class SocketIOActor extends Actor {
     case Message(sessionId, event) => {
       println(sessionId + "---" + event.toString())
       /* your message processing here! Like saving the data */
-      val name = (event \ "name").as[String];
-      var id = (event \ "payload" \ "id").as[String]
+      val name = (event \ "name").as[String]
 
 
       name match {
         case "todoCreated" => {
           val uuid: UUID = java.util.UUID.randomUUID()
+          var id = (event \ "payload" \ "id").as[String]
           id = uuid.toString()
           val text = (event \ "payload" \ "text").as[String]
           val done = (event \ "payload" \ "done").as[Boolean]
@@ -107,6 +107,7 @@ class SocketIOActor extends Actor {
           )))
         }
         case "todoTextChanged" => {
+          val id = (event \ "payload" \ "id").as[String]
           val text = (event \ "payload" \ "text").as[String]
           Todo.updateText(id, text)
           println("Sending todo text with id - " + id)
@@ -120,6 +121,7 @@ class SocketIOActor extends Actor {
 
         }
         case "todoStatusChanged" => {
+          val id = (event \ "payload" \ "id").as[String]
           val done = (event \ "payload" \ "done").as[Boolean]
           Todo.updateStatus(id, done)
           println("Sending todo done with id - " + id)
@@ -133,6 +135,7 @@ class SocketIOActor extends Actor {
         }
 
         case "todoDeleted" => {
+          val id = (event \ "payload" \ "id").as[String]
           Todo.delete(id)
           println("Sending id - " + id)
           notify(sessionId, Json.toJson(Map(
@@ -145,11 +148,9 @@ class SocketIOActor extends Actor {
 
         case "doneTodoDeleted" =>{
           println("in delete all")
-          val ids=(event\"payload"\"ids").as[String]
-          println(ids)
-          Todo.deleteDone(ids)
+          Todo.deleteDone
           println("sending from delete")
-          notify(sessionId,Json.toJson(Map("name"->Json.toJson(name) ,"ids"->Json.toJson(ids))))
+          notify(sessionId,Json.toJson(Map("name"->Json.toJson(name))))
         }
       }
     }
@@ -161,7 +162,7 @@ class SocketIOActor extends Actor {
   }
 
   def notify(sessionId: String, response: JsValue) {
-    //Sending data back here
+    /*Sending data back here*/
     sessions(sessionId).push(response)
   }
 }

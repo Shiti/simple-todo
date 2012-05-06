@@ -86,12 +86,9 @@ object Todo {
   }
 
   /* Delete all completed todo */
-  def deleteDone(ids:String)={
-    println(ids)
+  def deleteDone()={
     DB.withConnection{implicit connection=>
-      SQL("DELETE FROM Todo WHERE id in ({ids})").on(
-      'ids-> ids
-      ).executeUpdate()
+      SQL("DELETE FROM Todo WHERE done=true").executeUpdate()
     }
   }
 
