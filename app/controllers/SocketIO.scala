@@ -36,9 +36,9 @@ object SocketIO extends Controller {
           println("Connected")
           /* Create an Iteratee to consume the feed */
           val iteratee = Iteratee.foreach[JsValue] {
-            event =>
-              println("Talking -- " + event)
-              socketIOActor ! Message(sessionId, event)
+            cmd =>
+              println("Talking -- " + cmd)
+              socketIOActor ! Message(sessionId, cmd)
           }.mapDone {
             _ =>
               println("Quit!!!")
@@ -80,24 +80,23 @@ class SocketIOActor extends Actor {
         sender ! Connected(channel)
       }
     }
-    case Message(sessionId, event) => {
-      println(sessionId + "---" + event.toString())
+    case Message(sessionId, cmd) => {
+      println(sessionId + "---" + cmd.toString())
       /* your message processing here! Like saving the data */
-      val name = (event \ "name").as[String]
+      val name = (cmd \ "name").as[String]
 
 
       name match {
-        case "todoCreated" => {
+        case "createTodo" => {
           val uuid: UUID = java.util.UUID.randomUUID()
-          var id = (event \ "payload" \ "id").as[String]
-          id = uuid.toString()
-          val text = (event \ "payload" \ "text").as[String]
-          val done = (event \ "payload" \ "done").as[Boolean]
-          val disp_order = (event \ "payload" \ "disp_order").as[Int]
+          val id = uuid.toString()
+          val text = (cmd \ "payload" \ "text").as[String]
+          val done = (cmd \ "payload" \ "done").as[Boolean]
+          val disp_order = (cmd \ "payload" \ "disp_order").as[Int]
           Todo.create(Todo(id, text, done, disp_order))
           println("Sending todo with id - " + id)
           notify(sessionId,Json.toJson(Map(
-            "name"->Json.toJson(name),
+            "name"->Json.toJson("todoCreated"),
             "payload"->Json.toJson(Map(
               "id" -> Json.toJson(id),
               "text"->Json.toJson(text),
@@ -106,13 +105,13 @@ class SocketIOActor extends Actor {
             ))
           )))
         }
-        case "todoTextChanged" => {
-          val id = (event \ "payload" \ "id").as[String]
-          val text = (event \ "payload" \ "text").as[String]
+        case "changeTodoText" => {
+          val id = (cmd \ "payload" \ "id").as[String]
+          val text = (cmd \ "payload" \ "text").as[String]
           Todo.updateText(id, text)
           println("Sending todo text with id - " + id)
           notify(sessionId, Json.toJson(Map(
-            "name"->Json.toJson(name),
+            "name"->Json.toJson("todoChanged"),
             "payload"->Json.toJson(Map(
               "id" -> Json.toJson(id),
               "text"->Json.toJson(text)
@@ -120,13 +119,13 @@ class SocketIOActor extends Actor {
           )))
 
         }
-        case "todoStatusChanged" => {
-          val id = (event \ "payload" \ "id").as[String]
-          val done = (event \ "payload" \ "done").as[Boolean]
+        case "changeTodoStatus" => {
+          val id = (cmd \ "payload" \ "id").as[String]
+          val done = (cmd \ "payload" \ "done").as[Boolean]
           Todo.updateStatus(id, done)
           println("Sending todo done with id - " + id)
           notify(sessionId, Json.toJson(Map(
-            "name"->Json.toJson(name),
+            "name"->Json.toJson("todoChanged"),
             "payload"->Json.toJson(Map(
               "id" -> Json.toJson(id),
               "done"->Json.toJson(done)
@@ -134,23 +133,23 @@ class SocketIOActor extends Actor {
           )))
         }
 
-        case "todoDeleted" => {
-          val id = (event \ "payload" \ "id").as[String]
+        case "deleteTodo" => {
+          val id = (cmd \ "payload" \ "id").as[String]
           Todo.delete(id)
           println("Sending id - " + id)
           notify(sessionId, Json.toJson(Map(
-            "name"->Json.toJson(name),
+            "name"->Json.toJson("todoDeleted"),
             "payload"->Json.toJson(Map(
               "id" -> Json.toJson(id)
             ))
           )))
         }
 
-        case "doneTodoDeleted" =>{
+        case "deleteDoneTodo" =>{
           println("in delete all")
           Todo.deleteDone
           println("sending from delete")
-          notify(sessionId,Json.toJson(Map("name"->Json.toJson(name))))
+          notify(sessionId,Json.toJson(Map("name"->Json.toJson("doneTodoDeleted"))))
         }
       }
     }

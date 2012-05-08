@@ -15,11 +15,14 @@ Model.Todo = Backbone.Model.extend({
     /* Default attributes for a todo item. */
     defaults: function() {
         return {
-            modelName:'todo',  /* so denormalizers can resolve events to model */
+
             done:  false,
             disp_order: Model.Todos.nextOrder()
         };
     },
+
+    modelName:'todo',  /* so denormalizers can resolve events to model */
+
     /* bind this model to get event updates */
     initialize:function(){
         this.bindCQRS();

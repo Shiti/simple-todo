@@ -21,40 +21,38 @@ $(function () {
     function receiveTodoEvent(msg) {
         /* using backbone.cqrs event denormalizers */
         Backbone.CQRS.hub.emit('events', msg);
-        /* without using backbone.cqrs event denormalizers -- also requires changes in SocketIO.scala --notify part
+        /* without using backbone.cqrs event denormalizers
         var name=msg.name;
+        var payload=msg.payload;
 
         switch(name){
             case "todoCreated":
                 console.log("here");
-                Model.Todos.add({text:msg.text,done:msg.done,disp_order:msg.disp_order,id:msg.id});
+                Model.Todos.add({text:payload.text,done:payload.done,disp_order:payload.disp_order,id:payload.id});
                 break;
 
             case "todoDeleted":
-                Model.Todos.remove(Model.Todos.get(msg.id));
+                Model.Todos.remove(Model.Todos.get(payload.id));
                 console.log(Model.Todos);
                 break;
 
             case "todoTextChanged":
-                (Model.Todos.get(msg.id)).set('text',msg.text);
+                (Model.Todos.get(payload.id)).set('text',payload.text);
                 break;
 
             case "todoStatusChanged":
-                (Model.Todos.get(msg.id)).set('done',msg.done);
+                (Model.Todos.get(payload.id)).set('done',payload.done);
                 break;
 
             case "doneTodoDeleted":
                 console.log("in clear all");
-                _.each(Model.Todos.done(), function (todo) {
-                    todo.destroy();
-                    todo.remove();
-                });
+                Model.Todos.remove(Model.Todos.done());
                 break;
 
             default:
                 console.log(msg);
                 break;
-        }           */
+        }        */
         }
 
 
@@ -82,7 +80,7 @@ $(function () {
 
             Model.Todos.bind('add', this.addOne, this);
             Model.Todos.bind('reset', this.addAll, this);
-            Model.Todos.bind('all', this.render, this);
+            Model.Todos.bind('change', this.render, this);
 
             Model.Todos.fetch();
         },
@@ -131,7 +129,7 @@ $(function () {
 
             /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
-                name:'createTodo',
+                name:"createTodo",
                 payload:{
                     text:text,
                     done:false,
@@ -149,7 +147,7 @@ $(function () {
 //
             /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
-                name:'deleteDoneTodo',
+                name:"deleteDoneTodo",
                 payload:{}
 
             });
@@ -191,22 +189,6 @@ $(function () {
     /* forward commands to server via websocket */
 
     Backbone.CQRS.hub.on('commands', function (cmd) {
-        var evt = cmd;
-
-        // convert command to event
-        if (evt.name === 'createTodo') {
-            evt.name = 'todoCreated';
-            evt.payload.id = _.uniqueId('p'); // add a id on simulated 'serverside'
-        } else if (evt.name === 'changeTodoText') {
-            evt.name = 'todoTextChanged';
-        } else if (evt.name === 'changeTodoStatus') {
-            evt.name = 'todoStatusChanged';
-        } else if (evt.name === 'deleteTodo') {
-            evt.name = 'todoDeleted';
-        } else if (evt.name=='deleteDoneTodo'){
-            evt.name='doneTodoDeleted';
-        }
-
         /* pass commands to websocket */
         todoSocket.send(JSON.stringify(cmd));
     });
@@ -225,17 +207,11 @@ $(function () {
         forEvent:'todoCreated'
     });
 
-    /* todoTextChanged event (just go with defaults) */
-    var todoTextChangedHandler = new Backbone.CQRS.EventDenormalizer({
-        forModel:'todo',
-        forEvent:'todoTextChanged'
-    });
-
-    /* todoStatusChanged event (just go with defaults) */
-    var todoStatusChangedHandler = new Backbone.CQRS.EventDenormalizer({
+    /* todoChanged event (just go with defaults) in case of both status and text change*/
+    var todoChangedHandler = new Backbone.CQRS.EventDenormalizer({
 
         forModel:'todo',
-        forEvent:'todoStatusChanged'
+        forEvent:'todoChanged'
     });
 
     /* todoDeleted event (just change methode to delete) */
