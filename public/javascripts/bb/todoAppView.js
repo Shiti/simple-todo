@@ -6,12 +6,17 @@
  * To change this template use File | Settings | File Templates.
  */
 
+/* global variable for websocket */
 var todoSocket;
 
 $(function () {
+    /* websocket */
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
     todoSocket = new WS(window.wsBaseUrl);
 
+    /* Wire up communication to/from server */
+
+    /* forward events from the server via websocket*/
     todoSocket.onmessage = function (msg) {
         console.log(msg);
 
@@ -190,7 +195,7 @@ $(function () {
     Backbone.sync = Backbone.CQRS.sync;
 
 
-    /* Wire up communication to/from server */
+    /* Wire up communication to server */
 
     /* forward commands to server via websocket */
 
@@ -233,8 +238,11 @@ $(function () {
     var doneTodoDeletedHandler=new Backbone.CQRS.EventDenormalizer({
         methode:'delete',
 
+        /*apply:function(data,model){
+
+        },
         /* bindings */
-        forModel:'Model.Todos',
+        forModel:'todo',
         forEvent:'doneTodoDeleted'
     });
 });
