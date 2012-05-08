@@ -80,7 +80,7 @@ $(function () {
 
             Model.Todos.bind('add', this.addOne, this);
             Model.Todos.bind('reset', this.addAll, this);
-            Model.Todos.bind('change', this.render, this);
+            Model.Todos.bind('all', this.render, this);
 
             Model.Todos.fetch();
         },
@@ -144,11 +144,17 @@ $(function () {
 
         /* Clear all done todo items, destroying their models. */
         clearCompleted:function () {
-//
+            var finished=[];
+            _.each(Model.Todos.done(), function(todo){
+                finished.push(todo.id);
+            });
+
             /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
                 name:"deleteDoneTodo",
-                payload:{}
+                payload:{
+                    ids:finished
+                }
 
             });
             /* emit it */
@@ -217,7 +223,6 @@ $(function () {
     /* todoDeleted event (just change methode to delete) */
     var todoDeletedHandler = new Backbone.CQRS.EventDenormalizer({
         methode:'delete',
-
 
         /* bindings */
         forModel:'todo',

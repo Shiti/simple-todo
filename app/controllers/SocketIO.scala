@@ -146,10 +146,21 @@ class SocketIOActor extends Actor {
         }
 
         case "deleteDoneTodo" =>{
+          val ids=(cmd\"payload"\"ids").as[Array[String]]
+
           println("in delete all")
-          Todo.deleteDone
-          println("sending from delete")
-          notify(sessionId,Json.toJson(Map("name"->Json.toJson("doneTodoDeleted"))))
+          //Todo.deleteDone
+          ids.foreach{id:String=>
+            Todo.delete(id)
+            notify(sessionId, Json.toJson(Map(
+              "name"->Json.toJson("todoDeleted"),
+              "payload"->Json.toJson(Map(
+                "id" -> Json.toJson(id)
+              ))
+            )))
+
+          }
+
         }
       }
     }
