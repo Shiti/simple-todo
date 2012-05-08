@@ -85,7 +85,7 @@ $(function () {
 
             Model.Todos.bind('add', this.addOne, this);
             Model.Todos.bind('reset', this.addAll, this);
-            Model.Todos.bind('all', this.render, this);
+            Model.Todos.bind('change', this.render, this);
 
             Model.Todos.fetch();
         },
