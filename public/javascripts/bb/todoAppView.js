@@ -86,8 +86,13 @@ $(function () {
             Model.Todos.bind('add', this.addOne, this);
             Model.Todos.bind('reset', this.addAll, this);
             Model.Todos.bind('change', this.render, this);
+            Model.Todos.bind('remove', this.removal ,this);
 
             Model.Todos.fetch();
+        },
+
+        removal: function(model, collection){
+            $('#' + model.id).parent("li").remove();
         },
 
         /* Re-rendering the App just means refreshing the statistics -- the rest
