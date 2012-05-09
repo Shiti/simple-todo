@@ -14,52 +14,15 @@ $(function () {
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
     todoSocket = new WS(window.wsBaseUrl);
 
-    /* Wire up communication to/from server */
-
-    /* forward events from the server via websocket*/
+    /* Wire up communication to/from server -forward events from the server via websocket*/
     todoSocket.onmessage = function (msg) {
-        console.log(msg);
-
         receiveTodoEvent(JSON.parse(msg.data));
     }
 
     function receiveTodoEvent(msg) {
         /* using backbone.cqrs event denormalizers */
         Backbone.CQRS.hub.emit('events', msg);
-        /* without using backbone.cqrs event denormalizers
-        var name=msg.name;
-        var payload=msg.payload;
-
-        switch(name){
-            case "todoCreated":
-                console.log("here");
-                Model.Todos.add({text:payload.text,done:payload.done,disp_order:payload.disp_order,id:payload.id});
-                break;
-
-            case "todoDeleted":
-                Model.Todos.remove(Model.Todos.get(payload.id));
-                console.log(Model.Todos);
-                break;
-
-            case "todoTextChanged":
-                (Model.Todos.get(payload.id)).set('text',payload.text);
-                break;
-
-            case "todoStatusChanged":
-                (Model.Todos.get(payload.id)).set('done',payload.done);
-                break;
-
-            case "doneTodoDeleted":
-                console.log("in clear all");
-                Model.Todos.remove(Model.Todos.done());
-                break;
-
-            default:
-                console.log(msg);
-                break;
-        }        */
-        }
-
+    }
 
     /* The Application */
 
@@ -67,7 +30,7 @@ $(function () {
     View.AppView = Backbone.View.extend({
 
         /* Instead of generating a new element, bind to the existing skeleton of
-         the App already present in the HTML. */
+        * the App already present in the HTML. */
         el:$("#todoapp"),
 
         /* Delegated events for creating new items, and clearing completed ones.  */
@@ -78,27 +41,27 @@ $(function () {
         },
 
         /* At initialization we bind to the relevant events on the `Todos`
-         collection, when items are added or changed. Kick things off by
-         loading any preexisting todos that might be saved in backend */
+        * collection, when items are added or changed. Kick things off by
+        * loading any preexisting todos that might be saved in backend */
         initialize:function () {
             this.input = this.$("#new-todo");
 
             Model.Todos.bind('add', this.addOne, this);
             Model.Todos.bind('reset', this.addAll, this);
-            Model.Todos.bind('change', this.render, this);
+            Model.Todos.bind('all', this.render, this);  /* binding rendering of the stats footer*/
             Model.Todos.bind('remove', this.removeItem ,this);
 
             Model.Todos.fetch();
         },
 
-        removeItem: function(model, collection){
+        /* Remove a todo from the frontend once it is removed from the collection*/
+        removeItem: function(model){
             $('#' + model.id).parent("li").remove();
         },
 
         /* Re-rendering the App just means refreshing the statistics -- the rest
-        of the app doesn't change.
-
-        render function using mustache.js  */
+        * of the app doesn't change.
+        * render function using mustache.js  */
         render:function () {
             var stats = {
                 total:Model.Todos.length,
@@ -119,7 +82,7 @@ $(function () {
         },
 
         /* Add a single todo item to the list by creating a view for it, and
-        appending its element to the `<ul>`.*/
+        * appending its element to the `<ul>`.*/
         addOne:function (todo) {
             var view = new View.TodoView({model:todo});
             $("#todo-list").append(view.render().el);
@@ -131,7 +94,7 @@ $(function () {
         },
 
         /* If you hit return in the main input field, and there is text to save,
-         create new **Todo** model persisting it to backend. */
+        * create new **Todo** model persisting it to backend. */
         createOnEnter:function (e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
@@ -149,11 +112,13 @@ $(function () {
             /* emit it */
             cmd.emit();
 
+            /* resetting the input box*/
             this.input.val('');
         },
 
         /* Clear all done todo items, destroying their models. */
         clearCompleted:function () {
+            /* using array in order to send the ids of completed todo to the server*/
             var finished=[];
             _.each(Model.Todos.done(), function(todo){
                 finished.push(todo.id);
@@ -165,15 +130,13 @@ $(function () {
                 payload:{
                     ids:finished
                 }
-
             });
             /* emit it */
             cmd.emit();
-
         },
 
         /* Lazily show the tooltip that tells you to press `enter` to save
-        a new todo item, after one second. */
+        * a new todo item, after one second. */
         showTooltip:function (e) {
             var tooltip = this.$(".ui-tooltip-top");
             var val = this.input.val();
@@ -185,7 +148,6 @@ $(function () {
             };
             this.tooltipTimeout = _.delay(show, 1000);
         }
-
     });
 
     /* Create our global collection of **Todos**. */
@@ -199,18 +161,15 @@ $(function () {
     /* override Backbone.sync with CQRS.sync which allows only GET method */
     Backbone.sync = Backbone.CQRS.sync;
 
-
-    /* Wire up communication to server */
-
-    /* forward commands to server via websocket */
-
+    /* Wire up communication to server -forward commands to server via websocket */
     Backbone.CQRS.hub.on('commands', function (cmd) {
         /* pass commands to websocket */
         todoSocket.send(JSON.stringify(cmd));
     });
 
 
-    /* Create a few EventDenormalizers */
+    /* Create a few EventDenormalizers
+    * the forModel must be the modelName specified in the model for binding*/
 
     /* todoCreated event (change methode to create and pass in model and collection to add it to */
     var todoCreateHandler = new Backbone.CQRS.EventDenormalizer({
@@ -223,7 +182,8 @@ $(function () {
         forEvent:'todoCreated'
     });
 
-    /* todoChanged event (just go with defaults) in case of both status and text change*/
+    /* todoChanged event (just go with defaults)- by default the methode will be set to update
+    * in case of both status and text change */
     var todoChangedHandler = new Backbone.CQRS.EventDenormalizer({
 
         forModel:'todo',
@@ -239,15 +199,4 @@ $(function () {
         forEvent:'todoDeleted'
     });
 
-    /* doneTodoDeleted event */
-    var doneTodoDeletedHandler=new Backbone.CQRS.EventDenormalizer({
-        methode:'delete',
-
-        /*apply:function(data,model){
-
-        },
-        /* bindings */
-        forModel:'todo',
-        forEvent:'doneTodoDeleted'
-    });
 });

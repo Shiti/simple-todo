@@ -9,7 +9,7 @@
 window.Model=new Object();
 
 /* Todo Model */
-/* Our basic **Todo** model has `text`, `order`, and `done` attributes. */
+/* Our basic **Todo** model has `text`, `disp_order`, and `done` attributes. */
 
 Model.Todo = Backbone.Model.extend({
     /* Default attributes for a todo item. */
@@ -26,11 +26,6 @@ Model.Todo = Backbone.Model.extend({
     /* bind this model to get event updates */
     initialize:function(){
         this.bindCQRS();
-    },
-
-    /* Toggle the `done` state of this todo item. */
-    toggle: function() {
-        this.save({done: !this.get("done")});
     }
 
 });

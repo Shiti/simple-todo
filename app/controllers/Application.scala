@@ -15,7 +15,7 @@ object Application extends Controller {
     Ok(views.html.index("Things To do"))
   }
 
-  /* GET all*/
+  /* GET all todos from backend*/
   def allTodos= Action {
     val s=Todo.getAll()
     Ok(generate(s))

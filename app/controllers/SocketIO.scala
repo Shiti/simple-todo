@@ -67,7 +67,7 @@ object SocketIO extends Controller {
 class SocketIOActor extends Actor {
 
   var sessions = Map.empty[String, PushEnumerator[JsValue]]
-
+  /* Defining the receive method */
   def receive = {
     case Join(sessionId) => {
       println(sessionId)
@@ -83,10 +83,13 @@ class SocketIOActor extends Actor {
     case Message(sessionId, cmd) => {
       println(sessionId + "---" + cmd.toString())
       /* your message processing here! Like saving the data */
+
+      /* fetching the event name from the event*/
       val name = (cmd \ "name").as[String]
 
-
+      /* processing at the back end based on the event name*/
       name match {
+        /* in case of creating a new todo */
         case "createTodo" => {
           val uuid: UUID = java.util.UUID.randomUUID()
           val id = uuid.toString()
@@ -105,6 +108,7 @@ class SocketIOActor extends Actor {
             ))
           )))
         }
+        /* if the text of the todo is to be modified */
         case "changeTodoText" => {
           val id = (cmd \ "payload" \ "id").as[String]
           val text = (cmd \ "payload" \ "text").as[String]
@@ -119,6 +123,7 @@ class SocketIOActor extends Actor {
           )))
 
         }
+        /* if the status 'done' is to be changed */
         case "changeTodoStatus" => {
           val id = (cmd \ "payload" \ "id").as[String]
           val done = (cmd \ "payload" \ "done").as[Boolean]
@@ -133,6 +138,7 @@ class SocketIOActor extends Actor {
           )))
         }
 
+        /* if a todo is to be deleted */
         case "deleteTodo" => {
           val id = (cmd \ "payload" \ "id").as[String]
           Todo.delete(id)
@@ -145,11 +151,11 @@ class SocketIOActor extends Actor {
           )))
         }
 
+        /* for clear completed todos*/
         case "deleteDoneTodo" =>{
           val ids=(cmd\"payload"\"ids").as[Array[String]]
 
-          println("in delete all")
-          //Todo.deleteDone
+          println("in delete all completed")
           ids.foreach{id:String=>
             Todo.delete(id)
             notify(sessionId, Json.toJson(Map(

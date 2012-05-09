@@ -50,7 +50,7 @@ View.TodoView = Backbone.View.extend({
     },
 
     /* To avoid XSS (not that it would be harmful in this particular app),
-     we use `jQuery.text` to set the contents of the todo item.*/
+    * we use `jQuery.text` to set the contents of the todo item.*/
     setText: function() {
         var text = this.model.get('text');
         this.$('.todo-text').text(text);
@@ -61,7 +61,7 @@ View.TodoView = Backbone.View.extend({
     /* Toggle the `"done"` state of the model. */
     toggleDone: function() {
 
-        //CQRS command
+        /* CQRS command */
         var cmd=new Backbone.CQRS.Command({
             name:"changeTodoStatus",
             payload:{
@@ -70,7 +70,7 @@ View.TodoView = Backbone.View.extend({
             }
         });
 
-        //emit it
+        /* emit it */
         cmd.emit();
     },
 
@@ -83,7 +83,7 @@ View.TodoView = Backbone.View.extend({
     /* Close the `"editing"` mode, saving changes to the todo. */
     close: function() {
         var newText=this.input.val();
-        if (newText) {
+        if (newText!=this.model.get('text')) {
 
             /* CQRS command */
             var cmd = new Backbone.CQRS.Command({
@@ -105,17 +105,9 @@ View.TodoView = Backbone.View.extend({
         if (e.keyCode == 13) this.close();
     },
 
-    /* Remove this view from the DOM. */
-    remove: function() {
-        $(this.el).remove();
-    },
-
     /* Remove the item, destroy the model.*/
     clear: function(e) {
-        //this.model.destroy();
         e.preventDefault();
-
-        //this.remove();
 
         /* CQRS command */
         var cmd = new Backbone.CQRS.Command({
