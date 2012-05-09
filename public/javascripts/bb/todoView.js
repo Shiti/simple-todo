@@ -115,7 +115,7 @@ View.TodoView = Backbone.View.extend({
         //this.model.destroy();
         e.preventDefault();
 
-        this.remove();
+        //this.remove();
 
         /* CQRS command */
         var cmd = new Backbone.CQRS.Command({
