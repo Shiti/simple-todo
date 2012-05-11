@@ -2,53 +2,54 @@
 
 @main(title) {
 
-    <script type="text/javascript">
-        window.wsBaseUrl =  "@routes.SocketIO.socketSetup(java.util.UUID.randomUUID().toString()).webSocketURL()";
-    </script>
-    <script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/bb/todoAppView.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/bb/todoView.js")" type="text/javascript"></script>
+<script type="text/javascript">
+    window.wsBaseUrl =  "@routes.SocketIO.socketSetup(java.util.UUID.randomUUID().toString()).webSocketURL()";
+</script>
+<script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/bb/todoCollection.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/bb/todoAppView.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/bb/todoView.js")" type="text/javascript"></script>
 
 <!-- Todo App Interface -->
 
 <div id="todoapp">
 
-    <div class="title">
+        <div class="title">
         <h1>Todos</h1>
-    </div>
-
-    <div class="content">
-
-        <div id="create-todo">
-            <input id="new-todo" placeholder="What needs to be done?" type="text"/>
-            <span class="ui-tooltip-top" style="display:none;">Press Enter to save this task</span>
         </div>
 
-        <div id="todos">
-            <ul id="todo-list"></ul>
+        <div class="content">
+
+        <div id="create-todo">
+        <input id="new-todo" placeholder="What needs to be done?" type="text"/>
+        <span class="ui-tooltip-top" style="display:none;">Press Enter to save this task</span>
+        </div>
+
+<div id="todos">
+        <ul id="todo-list"></ul>
         </div>
 
         <div id="todo-stats"></div>
 
-    </div>
+        </div>
 
-</div>
+        </div>
 
-<ul id="instructions">
-    <li>Double-click to edit a todo.</li>
-</ul>
+        <ul id="instructions">
+        <li>Double-click to edit a todo.</li>
+        </ul>
 
-<!--  Templates -->
+    <!--  Templates -->
 
 <script type="text/template" id="stats-template">
-    {{#totalList}}<span class='todo-count'>
-                <span class='number'>{{remaining}}</span>
-                <span class='word'> {{term}}</span> left. </span>{{/totalList}}
+{{#totalList}}<span class='todo-count'>
+        <span class='number'>{{remaining}}</span>
+<span class='word'> {{term}}</span> left. </span>{{/totalList}}
     {{#doneList}}<span class='todo-clear'>
-                <a href='#'>Clear <span class='number-done'> {{done}} </span>
-                    Completed <span class='word-done'> {{term1}} </span>
-                </a> </span> {{/doneList}}
-</script>
+            <a href='#'>Clear <span class='number-done'> {{done}} </span>
+Completed <span class='word-done'> {{term1}} </span>
+</a> </span> {{/doneList}}
+        </script>
 
 
 <script type="text/template" id="item-template">

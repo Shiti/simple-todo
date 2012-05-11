@@ -7,6 +7,10 @@ import play.api.mvc._
 
 import com.codahale.jerkson.Json._
 
+import play.api.data._
+import play.api.data.Forms._
+
+import views._
 import models.Todo
 
 object Application extends Controller {
@@ -15,11 +19,23 @@ object Application extends Controller {
     Ok(views.html.index("Things To do"))
   }
 
+  def login=Action{implicit request=>
+    Ok(views.html.login(loginForm))
+  }
+
   /* GET all todos from backend*/
   def allTodos= Action {
     val s=Todo.getAll()
     Ok(generate(s))
-    }
+  }
+
+  /* Login form */
+  val loginForm=Form(
+    tuple(
+      "userId"->nonEmptyText,
+      "password"->nonEmptyText
+    )
+  )
 
   
 }
