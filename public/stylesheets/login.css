@@ -1,0 +1,14 @@
+body{
+    background-color: #eeeeee;
+}
+
+#login {
+    width: 480px;
+    margin: 0 auto 40px;
+    background: white;
+    padding: 20px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+}

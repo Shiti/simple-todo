@@ -1,10 +1,25 @@
-@(loginForm: Form[(String,String)])
+@(loginForm: Form[(String,String)])(implicit flash:Flash)
 
 @import helper._
+<html>
+    <head>
+        <title>Things To Do</title>
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/login.css")">
 
-@form(routes.Application.login){
-    @inputText(loginForm("userId"))
-    @inputPassword(loginForm("password"))
 
-    <input type="submit" value="Login">
-}
+    </head>
+    <body>
+        <div id="login">
+        @form(routes.Application.authenticate){
+            <h2>Login</h2>
+            <p>
+            <input type="text" name="userId" placeholder="UserName" id="userId" value="@loginForm("userId").value">
+            </p>
+            <p>
+            <input type="password" name="password" id="password" placeholder="Password">
+            </p>
+            <input type="submit" value="Login" class="button">
+        }
+        </div>
+    </body>
+</html>

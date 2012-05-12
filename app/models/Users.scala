@@ -17,16 +17,28 @@ import anorm.SqlParser._
 case class Users(userId:String,password:String)
 
 object Users {
-
-  def getPassword(userId:String):Option[String]={
-    DB.withConnection{implicit connection=>
-      SQL("SELECT password FROM Users WHERE userId={userId}").on(
-        'userId->userId
-      ).as(scalar[String].singleOpt)
+  
+  def simple={
+    get[String]("userId")~
+    get[String]("password")map{
+      case userId~password=>Users(userId,password)
     }
   }
 
-  def authenticate(userId:String,password:String):Boolean={
-    (password==getPassword(userId))
+  def authenticate(userId:String,password:String):Option[Users]={
+    DB.withConnection{implicit connection=>
+      SQL("SELECT * FROM Users WHERE userId={userId} AND password={password}"
+      ).on(
+        'userId->userId,
+        'password->password)
+        .as(Users.simple.singleOpt)}
+  }
+
+  def find(userId: String): Option[Users] = {
+    DB.withConnection { implicit connection =>
+      SQL("SELECT * FROM Users WHERE userId = {userId}").on(
+        'userId->userId
+      ).as(Users.simple.singleOpt)
+    }
   }
 }

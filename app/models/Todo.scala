@@ -17,7 +17,7 @@ import anorm.SqlParser._
 import play.api.libs.json.JsValue
 
 
-case class Todo(id:String,text:String,done:Boolean,disp_order:Int)
+case class Todo(id:String,text:String,done:Boolean,disp_order:Int,userId:String)
 
 object Todo {
 
@@ -26,15 +26,16 @@ object Todo {
     get[String]("id")~
     get[String]("text")~
     get[Boolean]("done")~
-    get[Int]("disp_order")map {
-      case id~text~done~disp_order =>Todo(id,text,done,disp_order)
+    get[Int]("disp_order")~
+    get[String]("userId")map {
+      case id~text~done~disp_order~userId =>Todo(id,text,done,disp_order,userId)
     }
   }
 
   /* Retrieve all todos */
-  def getAll():Seq[Todo]={
+  def getAll(userId:String):Seq[Todo]={
     DB.withConnection{implicit connection=>
-      SQL("SELECT * FROM Todo").as(Todo.simple *)
+      SQL("SELECT * FROM Todo WHERE userId={userId}").on('userId->userId).as(Todo.simple *)
     }
   }
 
@@ -50,11 +51,12 @@ object Todo {
   /* Add a todo to the database */
   def create(task:Todo)={
     DB.withConnection{implicit connection=>
-      SQL("INSERT INTO Todo (id,text,done,disp_order) VALUES({id},{text},{done},{disp_order})").on(
+      SQL("INSERT INTO Todo (id,text,done,disp_order,userId) VALUES({id},{text},{done},{disp_order},{userId})").on(
         'id->task.id,
         'text->task.text,
         'done->task.done,
-        'disp_order->task.disp_order
+        'disp_order->task.disp_order,
+        'userId->task.userId
       ).executeUpdate()
     }
   }
@@ -92,4 +94,4 @@ object Todo {
     }
   }
 
-}
+};

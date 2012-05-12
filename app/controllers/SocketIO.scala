@@ -96,7 +96,8 @@ class SocketIOActor extends Actor {
           val text = (cmd \ "payload" \ "text").as[String]
           val done = (cmd \ "payload" \ "done").as[Boolean]
           val disp_order = (cmd \ "payload" \ "disp_order").as[Int]
-          Todo.create(Todo(id, text, done, disp_order))
+          val userId="sampleId"
+          Todo.create(Todo(id, text, done, disp_order,userId))
           println("Sending todo with id - " + id)
           notify(sessionId,Json.toJson(Map(
             "name"->Json.toJson("todoCreated"),
