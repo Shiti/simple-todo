@@ -18,7 +18,6 @@ object TodoList extends Controller with Secured{
 
   def index = IsAuthenticated { username => _ =>
     Users.find(username).map { user =>
-      println(user.userId)
       Ok(html.index("Things to Do"))
     }.getOrElse(Forbidden)
   }
