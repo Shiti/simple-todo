@@ -3,7 +3,7 @@
 @main(title) {
 
     <script type="text/javascript">
-        window.wsBaseUrl =  "@routes.SocketIO.socketSetup(java.util.UUID.randomUUID().toString()).webSocketURL()";
+        window.wsBaseUrl =  "ws://127.0.0.1:9000/socket.io/1/websocket/"+java.util.UUID.randomUUID().toString();
     </script>
     <script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/bb/todoAppView.js")" type="text/javascript"></script>
