@@ -16,21 +16,17 @@ import models._
 
 object TodoList extends Controller with Secured{
 
-//  def index = Action { implicit request =>
-//    Ok(views.html.index("Things To do"))
-//  }
-
   def index = IsAuthenticated { username => _ =>
     Users.find(username).map { user =>
+      println(user.userId)
       Ok(html.index("Things to Do"))
     }.getOrElse(Forbidden)
   }
 
   /* GET all todos from backend*/
-  def allTodos= Action {implicit request=>
-    session.get("connected").map{userId=>
-      println("its"+userId)
-      val s=Todo.getAll(userId)
+  def allTodos=IsAuthenticated { username => _ =>
+    Users.find(username).map { user =>
+      val s=Todo.getAll(user.userId)
       Ok(generate(s))
     }.getOrElse{
       Unauthorized("Oops!!!")
