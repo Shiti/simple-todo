@@ -41,4 +41,25 @@ object Users {
       ).as(Users.simple.singleOpt)
     }
   }
+
+  def create(user:Users)={
+    DB.withConnection{implicit connection=>
+      SQL("INSERT INTO Users(userId,password) VALUES({userId},{password})").on(
+        'userId->user.userId,
+        'password->user.password
+      ).executeUpdate()
+    }
+  }
+
+  def newUser(userId:String,password:String):Boolean={
+    if (find(userId).isEmpty)
+    {
+      val user=Users(userId,password)
+      create(user)
+      true
+    }
+    else
+      false
+  }
+  
 }

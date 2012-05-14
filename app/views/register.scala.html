@@ -1,0 +1,35 @@
+@(registerForm: Form[(String,String)])(implicit flash:Flash)
+
+<html>
+<head>
+    <title>Things To Do</title>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/login.css")">
+
+
+</head>
+<body>
+<div id="signup" class="form">
+    @helper.form(routes.Application.newUser){
+    <h2>Sign up</h2>
+    @registerForm.globalError.map { error =>
+    <p class="error">
+        @error.message
+    </p>
+    }
+
+    @flash.get("success").map { message =>
+    <p class="success">
+        @message
+    </p>
+    }
+    <p>
+        <input type="text" name="userId" placeholder="UserName" id="userId" required>
+    </p>
+    <p>
+        <input type="password" name="password" id="password" placeholder="Password" required>
+    </p>
+    <input type="submit" value="Sign up" class="button">
+    }
+</div>
+</body>
+</html>

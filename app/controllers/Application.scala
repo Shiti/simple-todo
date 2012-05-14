@@ -47,6 +47,28 @@ object Application extends Controller {
       "success" -> "You've been logged out"
     )
   }
+
+  def register=Action{implicit request=>
+    Ok(html.register(signupForm))
+  }
+
+  val signupForm=Form(
+    tuple(
+      "userId" -> nonEmptyText,
+      "password" -> nonEmptyText
+    ) verifying ("Username already in use", result => result match {
+      case (userId, password) => Users.newUser(userId,password)
+    })
+  )
+
+  def newUser= Action { implicit request =>
+    signupForm.bindFromRequest.fold(
+      formWithErrors => BadRequest(html.register(formWithErrors)),
+      user => Redirect(routes.Application.login).withNewSession.flashing(
+        "success" -> "Registration successful"
+      )
+    )
+  }
 }
 
 /**

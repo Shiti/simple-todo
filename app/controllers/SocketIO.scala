@@ -13,7 +13,6 @@ import play.api.Play.current
 import akka.util.Timeout
 import akka.pattern.ask
 
-import models.Todo._
 import java.util.UUID
 import models.Todo
 
@@ -80,13 +79,12 @@ class SocketIOActor extends Actor {
         sender ! Connected(channel)
       }
     }
-    case Message(sessionId, cmd) => {
+    case Message(sessionId,cmd) => {
       println(sessionId + "---" + cmd.toString())
       /* your message processing here! Like saving the data */
 
       /* fetching the event name from the event*/
       val name = (cmd \ "name").as[String]
-
       /* processing at the back end based on the event name*/
       name match {
         /* in case of creating a new todo */
@@ -96,7 +94,7 @@ class SocketIOActor extends Actor {
           val text = (cmd \ "payload" \ "text").as[String]
           val done = (cmd \ "payload" \ "done").as[Boolean]
           val disp_order = (cmd \ "payload" \ "disp_order").as[Int]
-          val userId="sampleId"
+          val userId = (cmd \ "payload" \ "userId").as[String]
           Todo.create(Todo(id, text, done, disp_order,userId))
           println("Sending todo with id - " + id)
           notify(sessionId,Json.toJson(Map(

@@ -1,9 +1,10 @@
-@(title: String)
+@(title: String,userId:String)
 
 @main(title) {
 
 <script type="text/javascript">
     window.wsBaseUrl =  "ws://127.0.0.1:9000/socket.io/1/websocket/"+java.util.UUID.randomUUID().toString();
+    window.userId="@userId";
 </script>
 
 <script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>

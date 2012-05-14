@@ -10,7 +10,7 @@ CREATE TABLE Todo(
   id VARCHAR(255),
   text VARCHAR(100),
   done BOOLEAN,
-  disp_order INT UNIQUE,
+  disp_order INT,
   userId VARCHAR(50),
   PRIMARY KEY(id),
   FOREIGN KEY(userId) REFERENCES Users(userId) ON DELETE CASCADE
