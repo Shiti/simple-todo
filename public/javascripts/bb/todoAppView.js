@@ -107,7 +107,7 @@ $(function () {
                     text:text,
                     done:false,
                     disp_order:Model.Todos.nextOrder(),
-                    userId:window.userId
+                    userId:window.session.getUserId()
                 }
             });
             /* emit it */

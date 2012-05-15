@@ -4,7 +4,13 @@
 
 <script type="text/javascript">
     window.wsBaseUrl =  "ws://127.0.0.1:9000/socket.io/1/websocket/"+java.util.UUID.randomUUID().toString();
-    window.userId="@userId";
+    window.session=(function(){
+        var userId="@userId";
+        return{
+            getUserId:function(){return userId;}
+        }
+    })();
+
 </script>
 
 <script src="@routes.Assets.at("javascripts/bb/todoModel.js")" type="text/javascript"></script>
