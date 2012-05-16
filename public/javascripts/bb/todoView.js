@@ -66,7 +66,8 @@ View.TodoView = Backbone.View.extend({
             name:"changeTodoStatus",
             payload:{
                 id:this.model.id,
-                done:!this.model.get('done')
+                done:!this.model.get('done'),
+                userId:window.session.getUserId()
             }
         });
 
@@ -90,7 +91,9 @@ View.TodoView = Backbone.View.extend({
                 name: "changeTodoText",
                 payload: {
                     id: this.model.id,
-                    text: newText
+                    text: newText,
+                    userId:window.session.getUserId()
+
                 }
             });
 
@@ -113,7 +116,8 @@ View.TodoView = Backbone.View.extend({
         var cmd = new Backbone.CQRS.Command({
             name: "deleteTodo",
             payload: {
-                id: this.model.id
+                id: this.model.id,
+                userId:window.session.getUserId()
             }
         });
 

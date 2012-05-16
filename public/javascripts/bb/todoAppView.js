@@ -129,7 +129,9 @@ $(function () {
             var cmd = new Backbone.CQRS.Command({
                 name:"deleteDoneTodo",
                 payload:{
-                    ids:finished
+                    ids:finished,
+                    userId:window.session.getUserId()
+
                 }
             });
             /* emit it */

@@ -83,8 +83,12 @@ class SocketIOActor extends Actor {
       println(sessionId + "---" + cmd.toString())
       /* your message processing here! Like saving the data */
 
-      /* fetching the event name from the event*/
+      /* fetching the command name from the event*/
       val name = (cmd \ "name").as[String]
+
+      /* fetching userId for the command */
+      val userId = (cmd \ "payload" \ "userId").as[String]
+
       /* processing at the back end based on the event name*/
       name match {
         /* in case of creating a new todo */
@@ -94,7 +98,6 @@ class SocketIOActor extends Actor {
           val text = (cmd \ "payload" \ "text").as[String]
           val done = (cmd \ "payload" \ "done").as[Boolean]
           val disp_order = (cmd \ "payload" \ "disp_order").as[Int]
-          val userId = (cmd \ "payload" \ "userId").as[String]
           Todo.create(Todo(id, text, done, disp_order,userId))
           println("Sending todo with id - " + id)
           notify(sessionId,Json.toJson(Map(
@@ -111,7 +114,7 @@ class SocketIOActor extends Actor {
         case "changeTodoText" => {
           val id = (cmd \ "payload" \ "id").as[String]
           val text = (cmd \ "payload" \ "text").as[String]
-          Todo.updateText(id, text)
+          Todo.updateText(id, text,userId)
           println("Sending todo text with id - " + id)
           notify(sessionId, Json.toJson(Map(
             "name"->Json.toJson("todoChanged"),
@@ -126,7 +129,7 @@ class SocketIOActor extends Actor {
         case "changeTodoStatus" => {
           val id = (cmd \ "payload" \ "id").as[String]
           val done = (cmd \ "payload" \ "done").as[Boolean]
-          Todo.updateStatus(id, done)
+          Todo.updateStatus(id, done,userId)
           println("Sending todo done with id - " + id)
           notify(sessionId, Json.toJson(Map(
             "name"->Json.toJson("todoChanged"),
@@ -140,7 +143,7 @@ class SocketIOActor extends Actor {
         /* if a todo is to be deleted */
         case "deleteTodo" => {
           val id = (cmd \ "payload" \ "id").as[String]
-          Todo.delete(id)
+          Todo.delete(id,userId)
           println("Sending id - " + id)
           notify(sessionId, Json.toJson(Map(
             "name"->Json.toJson("todoDeleted"),
@@ -156,7 +159,7 @@ class SocketIOActor extends Actor {
 
           println("in delete all completed")
           ids.foreach{id:String=>
-            Todo.delete(id)
+            Todo.delete(id,userId)
             notify(sessionId, Json.toJson(Map(
               "name"->Json.toJson("todoDeleted"),
               "payload"->Json.toJson(Map(
