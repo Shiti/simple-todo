@@ -115,5 +115,6 @@ $(function(){
     Model.Todos = new Model.TodoList;
 
     window.TodoApp = new View.AppView;
+    Model.Todos.syncDirtyAndDestroyed();
 
 });
