@@ -6,9 +6,6 @@ import play.api.mvc._
 import play.api.libs.json.Json
 import java.util.UUID
 
-import com.codahale.jerkson.Json._
-
-
 import models.Todo
 
 object Application extends Controller {
@@ -18,11 +15,11 @@ object Application extends Controller {
   }
 
   /* GET */
-  def getTodo(id:String) = Action(parse.json) {request =>
-    (request.body).asOpt[JsValue].map{ model =>
+  def getTodo(id: String) = Action(parse.json) { request =>
+    (request.body).asOpt[JsValue].map { model =>
       println("gettodo:" + model.toString())
-      Todo.findById((model\"id").toString())
-      Ok("get"+model.toString())
+      Todo.findById((model \ "id").toString())
+      Ok("get" + model.toString())
     }.getOrElse {
       BadRequest("Missing parameter [model]")
     }
@@ -30,11 +27,11 @@ object Application extends Controller {
   }
 
   /* POST */
-  def postTodo = Action(parse.json) {request =>
+  def postTodo = Action(parse.json) { request =>
     (request.body).asOpt[JsValue].map { model =>
       println("postTodo:" + model.toString())
 
-      val uuid:UUID = java.util.UUID.randomUUID()
+      val uuid: UUID = java.util.UUID.randomUUID()
       val us = uuid.toString()
 
       Todo.create(Todo(us, (model \ "text").as[String], (model \ "done").as[Boolean], (model \ "disp_order").as[Int]))
@@ -48,18 +45,18 @@ object Application extends Controller {
   }
 
   /* PUT */
-  def putTodo(id:String) = Action(parse.json) {request =>
-    (request.body).asOpt[JsValue].map{ model =>
-      val t=Todo.findById(id)
-      val text=(model\"text").as[String]
-      if(t.get.text!=text){
-        Todo.updateText(id,text)
-      Ok(Json.stringify(Json.toJson( Map("text" -> text))))
+  def putTodo(id: String) = Action(parse.json) { request =>
+    (request.body).asOpt[JsValue].map { model =>
+      val t = Todo.findById(id)
+      val text = (model \ "text").as[String]
+      if (t.get.text != text) {
+        Todo.updateText(id, text)
+        Ok(Json.stringify(Json.toJson(Map("text" -> text))))
       }
-      else{
-        val done=(model\"done").as[Boolean]
-        Todo.updateStatus(id,done)
-        Ok(Json.stringify(Json.toJson(Map("done"->done))))
+      else {
+        val done = (model \ "done").as[Boolean]
+        Todo.updateStatus(id, done)
+        Ok(Json.stringify(Json.toJson(Map("done" -> done))))
       }
     }.getOrElse {
       BadRequest("Missing parameter [model]")
@@ -67,16 +64,16 @@ object Application extends Controller {
   }
 
   /* DELETE */
-  def deleteTodo(id:String) = Action {
-    val model=Todo.findById(id)
+  def deleteTodo(id: String) = Action {
+    val model = Todo.findById(id)
     Todo.delete(id)
-    Ok(Json.toJson(generate(model)))
+    Ok(Json.toJson(model))
   }
 
   /* GET */
-  def allTodos= Action {
-    val s=Todo.getAll()
-    Ok(generate(s))
-    }
+  def allTodos = Action {
+    val s = Todo.getAll()
+    Ok(Json.toJson(s))
+  }
 
 }
