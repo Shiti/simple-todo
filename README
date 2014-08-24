@@ -1,22 +1,15 @@
-A Backbone.js Todo app using Play-scala,anorm and mysql.It is the same Todo app found in Backbone.js examples
-
-
-
+A Backbone.js Todo app using Play-scala,anorm and mysql.
+It is the same Todo app found in Backbone.js examples
 
 
 ========================
-HOW TO USE THIS TEMPLATE
+HOW TO START THIS PROJECT
 ========================
 
-* install sbt 0.11.2  if you do not have it already. You can get it from here: https://github.com/harrah/xsbt/wiki/Getting-Started-Setup
+* install sbt 0.13.5 if you do not have it already. You can get it from here: http://www.scala-sbt.org/download.html
 
 * execute 'sbt' and then `help play` for play specific commands
 
 * execute `sbt` and then `compile` to build the project
 
 * execute `sbt` and then 'run' to run the built-in development server
-
-* onece the development server is running, documentation is available at http://localhost:9000/@documentation
-
-
-
